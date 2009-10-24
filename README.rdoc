@@ -1,0 +1,92 @@
+= Trapeze - AMQP Web Routing
+Trapeze-rb provides a Ruby-Rack binding for the Trapeze (http://github.com/paulj/trapeze) AMQP
+web router and balancer. Please see the Trapeze pages for more details.
+
+== Getting Started
+=== Installing
+Trapeze currently needs to be installed via source with:
+  git clone git://github.com/paulj/trapeze-rb.git
+  cd trapeze-rb
+  rake build install
+
+You'll also need a Trapeze server running. Please see http://github.com/paulj/trapeze/blob/master/README.rdoc
+for instructions on getting this installed and running.
+
+=== Running an application via the trapeze helper
+Trapeze provides a Rack (http://rack.rubyforge.org) adapter, allowing any standard Rack application to
+be made available. It also bundles a script called trapeze that will start up an instance of Thin using
+Trapeze (AMQP) as a backend. This section will cover running a simple Sinatra application with the trapeze helper.
+
+Firstly, say we have a simple Sinatra application (called simple-app.rb):
+  require 'rubygems'
+  require 'sinatra'
+  
+  get '/' do
+    "Hello World"
+  end
+
+To run with the trapeze adapter, you'll need a simple rackup configuration file. Create a config.ru such as:
+  require 'simple-app'
+  
+  set :run, false
+
+  run Sinatra::Application
+
+From the command line, you can now start this application with a command line such as:
+  trapezerb -k "get.localhost.#" -n simple-ruby-app -R config.ru start
+Thin should boot, and provide output such as:
+  >> Thin web server (v1.0.0 codename That's What She Said)
+  >> Maximum connections set to 1024
+  >> Listening on simple-ruby-app via localhost, CTRL+C to stop
+
+You can now visit http://localhost:55672 to see you application.
+
+=== Configuring Sinatra to use Trapeze as the default server
+To make a Sintatra application run Trapeze instead of thin, a simple script such as the following can be used:
+  require 'rubygems'
+  require 'sinatra'
+  require 'trapeze'
+  
+  set :Host, 'localhost'
+  set :Port, 'get.localhost.#'
+  set :Queue_Name, 'simple'
+
+  get '/' do
+    "Hello World"
+  end
+
+This instructs Sinatra to start Trapeze as the Rack adapter; and informs trapeze that it should use
+an server available at localhost; and informs trapeze that it should listen to any GET requests made to
+the localhost domain.
+
+You can now run the application with:
+  ruby standalone-app.rb
+
+You should see it startup with something like:
+  == Sinatra/0.9.2 has taken the stage on *.localhost.*./.# for development with backup from Trapeze
+
+You can now visit http://localhost:55672, and see you own Sinatra app serving pages!
+
+== Software License
+  Copyright (c) 2009 Paul Jones <paulj@lshift.net>
+  Copyright (c) 2009 LShift Ltd. <query@lshift.net>
+
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation
+  files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use, copy,
+  modify, merge, publish, distribute, sublicense, and/or sell copies
+  of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
