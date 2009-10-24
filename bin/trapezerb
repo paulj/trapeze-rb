@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+# Trapeze command line interface script.
+# Run <tt>trapezerb -h</tt> to get more usage.
+require 'rubygems'
+require File.dirname(__FILE__) + '/../lib/trapeze'
+
+Trapeze::Runner.new(ARGV).run!
