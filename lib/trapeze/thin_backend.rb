@@ -46,6 +46,10 @@ module Trapeze
       false
     end
     
+    def comm_inactivity_timeout=(timeout)
+      # Ignore
+    end
+    
     def send_data(data)
       @amqp_req.write(data)
     end
